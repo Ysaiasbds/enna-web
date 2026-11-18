@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Operación Samba Perdida</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,600;1,800;1,900&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#efe3c8; --paper:#fbf6e9; --ink:#1d1a14;
+  --gum:#d9a760; --stamp:#d6322b; --ok:#1d7a4f; --muted:#6b5d40;
+  --display:'Archivo','Arial Black',Arial,sans-serif;
+  --text:'Source Serif 4',Georgia,serif;
+}
+*{box-sizing:border-box}
+html{background:var(--cream)}
+body{
+  margin:0;min-height:100vh;min-height:100dvh;color:var(--ink);font-family:var(--text);font-size:1.125rem;line-height:1.55;
+  background:
+    repeating-linear-gradient(115deg,transparent 0 46px,rgba(150,110,40,.07) 46px 92px),
+    var(--cream);
+  display:grid;place-items:center;padding:clamp(12px,4vw,40px);
+}
+.sheet{
+  width:min(680px,100%);background:var(--paper);border-radius:6px;position:relative;overflow:hidden;
+  box-shadow:0 2px 0 var(--gum),0 30px 60px -24px rgba(90,65,20,.4);
+  padding:clamp(24px,6vw,52px);
+}
+/* Tres franjas: marca de la zapatilla y barra de progreso */
+.stripes{position:absolute;top:0;right:clamp(20px,6vw,52px);display:flex;gap:6px;transform:skewX(-14deg);transform-origin:top}
+.stripes i{display:block;width:12px;height:64px;background:var(--ink)}
+h1,h2{font-family:var(--display);font-style:italic;font-weight:900;line-height:.98;margin:0;letter-spacing:-.02em}
+h1{font-size:clamp(2.6rem,10vw,4.6rem);max-width:9ch}
+h2{font-size:clamp(1.6rem,5.5vw,2.3rem);margin-bottom:1.4rem;max-width:20ch}
+p{margin:0 0 1rem;max-width:52ch}
+.from{color:var(--muted);font-style:italic}
+.stamp{
+  display:inline-block;font-family:var(--display);font-weight:800;font-style:italic;color:var(--stamp);
+  border:3px solid var(--stamp);padding:.15rem .7rem;border-radius:4px;transform:rotate(-5deg);
+  letter-spacing:.04em;margin:0 0 1.4rem;opacity:.9
+}
+button{font:inherit;cursor:pointer}
+.btn{
+  font-family:var(--display);font-weight:800;font-style:italic;font-size:1.1rem;
+  background:var(--ink);color:var(--paper);border:0;border-radius:4px;padding:.9rem 1.6rem;
+  box-shadow:5px 5px 0 var(--gum);transition:transform .12s,box-shadow .12s;
+}
+.btn:hover{transform:translate(2px,2px);box-shadow:3px 3px 0 var(--gum)}
+.btn:active{transform:translate(5px,5px);box-shadow:0 0 0 var(--gum)}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--ink);box-shadow:none}
+:focus-visible{outline:3px solid var(--stamp);outline-offset:3px}
+
+/* Progreso */
+.progress{display:flex;gap:6px;margin-bottom:1.6rem;padding-right:110px}
+.progress span{flex:1;height:8px;background:#e6dcc2;transform:skewX(-14deg);transition:background .3s}
+.progress span.done{background:var(--ink)}
+.progress span.now{background:var(--gum)}
+.count{font-family:var(--display);font-weight:600;color:var(--muted);font-size:.95rem;margin:0 0 .6rem}
+
+/* Opciones */
+.opts{display:grid;gap:10px;margin:0 0 1rem;padding:0;list-style:none}
+.opt{
+  width:100%;text-align:left;background:#fffdf7;border:2px solid var(--ink);border-radius:4px;
+  padding:.95rem 1.1rem;font-size:1.05rem;color:var(--ink);
+  transition:transform .12s,background .15s,border-color .15s;
+}
+.opt:hover{transform:translateX(6px);background:#f6e8c8}
+.opt.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.opt.bad{background:#fbe3e1;border-color:var(--stamp);animation:shake .35s}
+.opt:disabled{cursor:default;transform:none}
+.hint{min-height:1.6rem;margin:0;color:var(--stamp);font-style:italic}
+@keyframes shake{25%{transform:translateX(-7px)}50%{transform:translateX(7px)}75%{transform:translateX(-4px)}}
+
+/* Final */
+.coords{
+  font-family:var(--display);font-weight:900;font-style:italic;font-size:clamp(1.7rem,7.2vw,2.8rem);
+  letter-spacing:-.01em;background:var(--ink);color:var(--gum);padding:1rem 1.2rem;border-radius:4px;
+  margin:1.2rem 0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;
+}
+.actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center}
+.copied{flex-basis:100%;text-align:center;min-height:1.4rem}
+.actions a{text-decoration:none;display:inline-block}
+.stamp.slam{animation:slam .45s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes slam{from{transform:rotate(-5deg) scale(2.4);opacity:0}to{transform:rotate(-5deg) scale(1);opacity:.9}}
+.thanks{margin:1.6rem 0 1.4rem;padding:.2rem 0 .2rem 1.1rem;border-left:6px solid var(--gum)}
+.thanks h3{font-family:var(--display);font-style:italic;font-weight:900;font-size:1.35rem;margin:0 0 .4rem;letter-spacing:-.01em}
+.thanks p{margin:0;font-size:1.05rem}
+.photos{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(8px,3vw,20px);margin:0 0 1.8rem}
+.photo{margin:0;background:#fffdf7;padding:6px 6px 8px;border:1px solid #e6dcc2;
+  box-shadow:0 12px 24px -16px rgba(90,65,20,.55);min-width:0}
+.photo:nth-child(1){transform:rotate(-2deg)}
+.photo:nth-child(2){transform:rotate(1deg)}
+.photo:nth-child(3){transform:rotate(-1deg)}
+.photo img,.photo .ph{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;background:#efe3c8}
+.photo .ph{display:grid;place-items:center;text-align:center;padding:.4rem;color:var(--muted);font-style:italic;font-size:.7rem;overflow-wrap:anywhere}
+.photo figcaption{font-family:var(--display);font-style:italic;font-weight:800;margin-top:.45rem;text-align:center;font-size:clamp(.8rem,3.2vw,1rem);line-height:1.15}
+.modal{border:0;padding:0;background:transparent;max-width:min(440px,calc(100% - 32px))}
+.modal::backdrop{background:rgba(40,28,8,.6)}
+.modal .box{background:var(--paper);border-radius:6px;padding:1.8rem;box-shadow:0 2px 0 var(--gum),0 24px 50px -16px rgba(0,0,0,.5)}
+.modal .stamp{margin-bottom:1rem}
+.modal h2{margin-bottom:.8rem}
+.hidden{display:none}
+@media (hover:none){.opt:hover{transform:none;background:#fffdf7}.btn:hover{transform:none;box-shadow:5px 5px 0 var(--gum)}}
+@media (max-width:520px){
+  body{padding:max(10px,env(safe-area-inset-top)) 10px max(10px,env(safe-area-inset-bottom));font-size:1.05rem;place-items:start center}
+  .sheet{padding:22px 18px 26px}
+  .stripes{right:16px}.stripes i{width:9px;height:44px}
+  .progress{padding-right:70px}
+  .opt{padding:1rem;min-height:52px}
+  .actions{flex-direction:column;align-items:stretch}
+  .actions .btn{width:100%;text-align:center}
+  .btn{padding:1rem 1.2rem}
+  .modal .box{padding:1.4rem}
+}
+.copied{color:var(--ok);font-style:italic}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="sheet">
+  <div class="stripes" aria-hidden="true"><i></i><i></i><i></i></div>
+
+  <section id="start">
+    <div class="stamp">Confidencial</div>
+    <h1>Operación Samba Perdida</h1>
+    <p style="margin-top:1.4rem">Enna, cumples 30 y tus tías Lili y Lourdes tienen una misión para ti: hay una zapatilla Adidas Samba esperándote, y solo su legítima propietaria puede localizarla.</p>
+    <p class="from">Responde cinco preguntas y recibirás las coordenadas.</p>
+    <button class="btn" id="go">Aceptar la misión</button>
+  </section>
+
+  <section id="quiz" class="hidden" aria-live="polite"></section>
+
+  <section id="final" class="hidden">
+    <div class="stamp slam">Misión cumplida</div>
+    <h2>Eres la dueña de la Samba perdida.</h2>
+    <p>Has pasado todas las pruebas. Estas son las coordenadas del escondite:</p>
+    <div class="coords" id="coords" aria-label="Latitud 39.9599, longitud menos 3.4980">00.0000, -0.0000</div>
+    <aside class="thanks" aria-labelledby="thx">
+      <h3 id="thx">Agradecimientos</h3>
+      <p>Esta misión la han creado tus tías Lili y Lulu, con mucho cariño, para celebrar tus 30 años.</p>
+    </aside>
+    <div class="photos">
+      <figure class="photo">
+        <img src="foto-lili.jpg" alt="Tía Lili" onerror="this.outerHTML='<div class=&quot;ph&quot;>foto-lili.jpg</div>'">
+        <figcaption>Tía Lili</figcaption>
+      </figure>
+      <figure class="photo">
+        <img src="foto-lulu.jpg" alt="Tía Lulu" onerror="this.outerHTML='<div class=&quot;ph&quot;>foto-lulu.jpg</div>'">
+        <figcaption>Tía Lulu</figcaption>
+      </figure>
+      <figure class="photo">
+        <img src="foto-programador.jpg" alt="El programador" onerror="this.outerHTML='<div class=&quot;ph&quot;>foto-programador.jpg</div>'">
+        <figcaption>El programador</figcaption>
+      </figure>
+    </div>
+    <div class="actions">
+      <a class="btn" id="maps" href="https://www.google.com/maps?q=39.9599,-3.4980" target="_blank" rel="noopener">Abrir en Google Maps</a>
+      <button class="btn ghost" id="copy">Copiar coordenadas</button>
+      <span class="copied" id="copied" role="status"></span>
+    </div>
+  </section>
+</main>
+
+<dialog class="modal" id="fail" aria-labelledby="failTitle">
+  <div class="box">
+    <div class="stamp">Misión fallida</div>
+    <h2 id="failTitle">Esa no era la respuesta.</h2>
+    <p>Las tías te devuelven al inicio para que lo intentes de nuevo.</p>
+    <button class="btn" id="restart" autofocus>Volver al inicio</button>
+  </div>
+</dialog>
+
+<script>
+const QS=[
+ ['¿Qué dos cosas nunca podían faltar durante los viajes en el coche de las tías?',['Dormir y estudiar','Comida y música','Silencio absoluto','Noticias'],1],
+ ['Cuando era adolescente, ¿qué actividad requería habilidades avanzadas de espionaje?',['Hacer los deberes','Escaparse para alguna fiesta','Ir a la biblioteca','Ordenar la habitación'],1],
+ ['¿Cuál es uno de los superpoderes más desarrollados de Enna?',['Hablar con los gatos','Dormir siestas legendarias','Respirar bajo el agua','Cocinar para 100 personas'],1],
+ ['Si hay que elegir un plan perfecto, ¿qué suele ganar?',['Limpiar la casa','Una reunión de trabajo','Viajar y comer algo rico','Organizar documentos'],2],
+ ['¿Quién merece recuperar la zapatilla perdida?',['Enna','Enna','Enna','Todas las anteriores'],3]
+];
+const COORDS='39.9599, -3.4980';
+const $=id=>document.getElementById(id);
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let i=0,locked=false;
+
+function show(){
+  const [q,opts]=QS[i];
+  const bars=QS.map((_,n)=>`<span class="${n<i?'done':n===i?'now':''}"></span>`).join('');
+  $('quiz').innerHTML=
+    `<div class="progress" aria-hidden="true">${bars}</div>
+     <p class="count">Pregunta ${i+1} de ${QS.length}</p>
+     <h2>${q}</h2>
+     <ul class="opts">${opts.map((o,n)=>`<li><button class="opt" data-n="${n}">${o}</button></li>`).join('')}</ul>
+     <p class="hint" id="hint" role="status"></p>`;
+  $('quiz').querySelectorAll('.opt').forEach(b=>b.onclick=()=>answer(b));
+  locked=false;
+}
+
+function answer(btn){
+  if(locked)return;
+  const n=+btn.dataset.n;
+  if(n===QS[i][2]){
+    locked=true;
+    btn.classList.add('ok');
+    $('quiz').querySelectorAll('.opt').forEach(b=>b.disabled=true);
+    $('hint').style.color='var(--ok)';
+    $('hint').textContent='Correcto.';
+    setTimeout(()=>{i++;i<QS.length?show():finish()},reduce?0:650);
+  }else{
+    locked=true;
+    btn.classList.add('bad');
+    $('fail').showModal();
+  }
+}
+
+function finish(){
+  $('quiz').classList.add('hidden');
+  $('final').classList.remove('hidden');
+  decode($('coords'),COORDS);
+}
+
+/* Revelado de coordenadas: cada dígito "se descifra" de izquierda a derecha */
+function decode(el,target){
+  if(reduce){el.textContent=target;return}
+  let step=0;
+  const t=setInterval(()=>{
+    el.textContent=[...target].map((c,n)=>/\d/.test(c)&&n>=step?Math.floor(Math.random()*10):c).join('');
+    step+=.5;
+    if(step>target.length){clearInterval(t);el.textContent=target}
+  },60);
+}
+
+function restart(){
+  i=0;locked=false;
+  $('quiz').classList.add('hidden');$('quiz').innerHTML='';
+  $('start').classList.remove('hidden');
+  $('go').focus();
+}
+$('restart').onclick=()=>$('fail').close();
+$('fail').addEventListener('close',restart);
+$('go').onclick=()=>{$('start').classList.add('hidden');$('quiz').classList.remove('hidden');show()};
+$('copy').onclick=async()=>{
+  try{await navigator.clipboard.writeText(COORDS);$('copied').textContent='Copiadas.'}
+  catch{$('copied').textContent='Selecciona y copia: '+COORDS}
+};
+</script>
+</body>
+</html>
